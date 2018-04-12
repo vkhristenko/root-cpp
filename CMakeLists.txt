@@ -4,3 +4,4 @@ project(root-cpp)
 
 # find root
 find_package(ROOT)
+find_package(Arrow)
