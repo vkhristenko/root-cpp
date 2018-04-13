@@ -33,3 +33,6 @@
 
 # to keep the bin dir locally
 bin/
+
+# on mac
+.DS_Store
