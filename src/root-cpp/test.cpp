@@ -21,11 +21,9 @@ struct data_row_t {
     std::vector<double> cost_components;
 };
 
-int main() {
-
+std::shared_ptr<arrow::Table> generate_table() {
+    // define empty vector of rows
     std::vector<data_row_t> rows;
-
-    std::cout << "111" << std::endl;
 
     for (int64_t i=0; i<100; i++) {
         std::vector<double> tmp {1.5, 2.5, 3.5};
@@ -34,12 +32,11 @@ int main() {
         );
     }
 
-    std::cout << "222" << std::endl;
-
     using arrow::DoubleBuilder;
     using arrow::Int64Builder;
     using arrow::ListBuilder;
 
+    // define builders
     arrow::MemoryPool *pool = arrow::default_memory_pool();
     Int64Builder id_builder(pool);
     DoubleBuilder cost_builder(pool);
@@ -48,6 +45,7 @@ int main() {
     
     std::cout << "333" << std::endl;
 
+    // build array builders
     for (auto const& row : rows) {
         id_builder.Append(row.id);
         cost_builder.Append(row.cost);
@@ -60,6 +58,7 @@ int main() {
 
     std::cout << "444" << std::endl;
 
+    // move from builders to immutable arrays
     std::shared_ptr<arrow::Array> id_array;
     id_builder.Finish(&id_array);
     std::shared_ptr<arrow::Array> cost_array;
@@ -74,17 +73,15 @@ int main() {
     };
     auto schema = std::make_shared<arrow::Schema>(schema_vector);
 
-    std::shared_ptr<arrow::Table> table = arrow::Table::Make(schema, {id_array, cost_array, cost_components_array});
+    return arrow::Table::Make(schema, {id_array, cost_array, cost_components_array});
+}
 
+int main() {
+    auto table = generate_table();
+    auto schema = table->schema();
+
+    // print the schema
     arrow::PrettyPrint(*schema, {5}, &(std::cout));
     std::cout << std::endl;
 
-    arrow::PrettyPrint(*id_array, {2}, &(std::cout));
-    std::cout << std::endl;
-
-    arrow::PrettyPrint(*cost_array, {2}, &(std::cout));
-    std::cout << std::endl;
-
-    arrow::PrettyPrint(*cost_components_array, {2}, &std::cout);
-    std::cout << std::endl;
 }
